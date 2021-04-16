@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import {Line} from 'react-chartjs-2';
+import {Bar, Line} from 'react-chartjs-2';
 // import Chart from 'chart.js';
 import { BrowserRouter, Route, Switch } from 'react-router-dom';
 import socketIOClient from "socket.io-client";
@@ -60,7 +60,7 @@ class App extends Component {
       opts: {}, // Options
       labels2: [],
       dataset2: [],
-      opts2: []
+      opts2: {}
     };
     // this.buttonClick = this.buttonClick.bind(this);
     this.addItem1 = this.addItem1.bind(this);
@@ -369,31 +369,63 @@ class App extends Component {
     this.state.socket.on('Query 3',data => {
       if(!this.state.updated) {
         var l = data.length;
-        var temp = [];
+        var flights = [];
+        var cases = [];
+        var brazil = [];
+        var china = [];
+        var india = [];
+        var unitedstates = [];
+        var str = this.state.list[0];
 
         for(var i = 0; i < l; i++) {
-          temp.push(data[i]["COUNT"]);
+          flights.push(data[i]["FLIGHTS"]);
+          cases.push(data[i]["CASES"]);
+          brazil.push(data[i]["BRAZIL"]);
+          china.push(data[i]["CHINA"]);
+          india.push(data[i]["INIDA"]);
+          unitedstates.push(data[i]["UNITEDSTATES"]);
         }
         
-        console.log(temp);
+        console.log(cases);
 
         this.setState({
           labels: ["February", "March", "April", "May", "June","July", "August",
                   "September", "October", "November"],
           datasets: [{
             fill: false,
+            label: 'Flights',
+            yAxisID: 'A',
             lineTension: 0.5,
-            backgroundColor: 'rgba(75,192,192,1)',
-            borderColor: 'rgba(0,0,0,1)',
+            borderColor: 'rgba(65,105,225)',
             borderWidth: 2,
-            data: temp
+            data: flights
+          },
+          {
+            fill: false,
+            label: 'Cases',
+            yAxisID: 'B',
+            lineTension: 0.5,
+            borderColor: 'rgba(220,20,60)',
+            borderWidth: 2,
+            data: cases
           }],
 
           opts: {
             title:{
               display:true,
-              text:'Figure out how to do this',
+              text:'New Covid Cases in '.concat(str).concat(' and Flights Into ').concat(str).concat(' From COVID Hotspots'),
               fontSize:20
+            },
+            scales: {
+              yAxes: [{
+                id: 'A',
+                type: 'linear',
+                position: 'left',
+              }, {
+                id: 'B',
+                type: 'linear',
+                position: 'right',
+              }]
             },
             animation: {
               duration: 0
@@ -403,13 +435,71 @@ class App extends Component {
             },
             responsiveAnimationDuration: 0,
             legend: {
-              display:false
+              display:true
             }
-          }
+          },
+
+          labels2: ["February", "March", "April", "May", "June","July", "August",
+          "September", "October", "November"],
+          dataset2: [{
+            label: 'Brazil',
+            backgroundColor: 'rgba(65,105,225)',
+            data: brazil,
+            stack: '0'
+          },
+          {
+            label: 'India',
+            backgroundColor: 'rgba(220,20,60)',
+            data: india,
+            stack: '0'
+          },
+          {
+            label: 'China',
+            backgroundColor: 'rgba(34,139,34)',
+            data: china,
+            stack: '0'
+          },
+          {
+            label: 'United States',
+            backgroundColor: 'rgba(0, 0, 1)',
+            data: unitedstates,
+            stack: '0'
+          }],
+
+          opts2: {
+            title:{
+              display:true,
+              text:'Flights into '.concat(str).concat(' per Month per Hotspot'),
+              fontSize:20
+            },
+            scales: {
+              x: {
+                  stacked: true
+              },
+              y: {
+                  stacked: true
+              }
+            },
+            animation: {
+              duration: 0
+            },
+            hover: {
+              animationDuration: 0
+            },
+            responsiveAnimationDuration: 0,
+            legend: {
+              display:true
+            }
+          },
         });
+
+        console.log(this.state.dataset2);
 
         info["labels"] = this.state.labels;
         info["datasets"] = this.state.datasets;
+
+        info2["labels"] = this.state.labels2;
+        info2["datasets"] = this.state.dataset2;
 
         setInterval(() => {}, 10000);
 
@@ -521,6 +611,19 @@ class App extends Component {
             options={this.state.opts}
           />
           <Line
+            data={info2}
+            options={this.state.opts2}
+          />
+      </div>
+    );
+
+    let loadedState2Bar = (
+      <div className="loaded">
+          <Line
+            data={info}
+            options={this.state.opts}
+          />
+          <Bar
             data={info2}
             options={this.state.opts2}
           />
@@ -707,7 +810,7 @@ class App extends Component {
                       </div>
                     </div>
                     {!this.state.updated && emptyState}
-                    {this.state.updated && loadedState}
+                    {this.state.updated && loadedState2Bar}
                 </div>
               </div>
             </Route>
