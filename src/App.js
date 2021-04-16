@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import {Line} from 'react-chartjs-2';
-import Chart from 'chart.js';
+// import Chart from 'chart.js';
 import { BrowserRouter, Route, Switch } from 'react-router-dom';
 import socketIOClient from "socket.io-client";
 const ENDPOINT = "http://127.0.0.1:5000";
@@ -43,13 +43,12 @@ class App extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      query: '',
-      list: [],
-      socket: socketIOClient(ENDPOINT),
-      labels: [],
-      datasets: [],
-      updated: false,
-      info: {"labels":[], "datasets":[]}
+      list: [], // Input from searchbars
+      socket: socketIOClient(ENDPOINT), // Socket (duh)
+      labels: [], // x-axis stuff
+      datasets: [], // Info about graph (data: is the actual data)
+      updated: false, // Whether the graph has been displayed
+      info: {"labels":[], "datasets":[]} // The actual graph stuff
     };
     // this.buttonClick = this.buttonClick.bind(this);
     this.addItem1 = this.addItem1.bind(this);
@@ -107,7 +106,6 @@ class App extends Component {
         list: list
       });
 
-      console.log("Ran");
       this.state.socket.emit("Query 2", this.state.list);
 
       // Finally, we need to reset the form
@@ -120,6 +118,36 @@ class App extends Component {
   }
 
   addItem3(e) {
+    // Prevent button click from submitting form
+    e.preventDefault();
+
+    // Create variables for our list, the item to add, and our form
+    let list = this.state.list;
+    const newItem = document.getElementById("search");
+    const form = document.getElementById("addItemForm");
+
+    // If our input has a value
+    if (newItem.value !== "") {
+      // Add the new item to the end of our list array
+      list.push(newItem.value);
+      // Then we use that to set the state for list
+      this.setState({
+        list: list
+      });
+
+      console.log("Ran 3");
+      this.state.socket.emit("Query 3",this.state.list);
+
+      // Finally, we need to reset the form
+      newItem.classList.remove("is-danger");
+      form.reset();
+    } else {
+      // If the input doesn't have a value, make the border red since it's required
+      newItem.classList.add("is-danger");
+    }
+  }
+
+  addItem4(e) {
     // Prevent button click from submitting form
     e.preventDefault();
 
@@ -141,11 +169,8 @@ class App extends Component {
         list: list
       });
 
-      console.log("Ran");
-      this.socket.on('Results',data => {
-        console.log(data);
-      });
-      this.socket.emit("Query 3",this.state.list);
+      console.log("Ran 4");
+      this.state.socket.emit("Query 4",this.state.list);
 
       // Finally, we need to reset the form
       newItem1.classList.remove("is-danger");
@@ -160,40 +185,6 @@ class App extends Component {
     }
   }
 
-  addItem4(e) {
-    // Prevent button click from submitting form
-    e.preventDefault();
-
-    // Create variables for our list, the item to add, and our form
-    let list = this.state.list;
-    const newItem = document.getElementById("search");
-    const form = document.getElementById("addItemForm");
-
-    // If our input has a value
-    if (newItem.value !== "") {
-      list.push("Query 4");
-      // Add the new item to the end of our list array
-      list.push(newItem.value);
-      // Then we use that to set the state for list
-      this.setState({
-        list: list
-      });
-
-      console.log("Ran");
-      this.socket.on('Results',data => {
-        console.log(data);
-      });
-      this.socket.emit("Query 4",this.state.list);
-
-      // Finally, we need to reset the form
-      newItem.classList.remove("is-danger");
-      form.reset();
-    } else {
-      // If the input doesn't have a value, make the border red since it's required
-      newItem.classList.add("is-danger");
-    }
-  }
-
   addItem5(e) {
     // Prevent button click from submitting form
     e.preventDefault();
@@ -205,7 +196,6 @@ class App extends Component {
 
     // If our input has a value
     if (newItem.value !== "") {
-      list.push("Query 5");
       // Add the new item to the end of our list array
       list.push(newItem.value);
       // Then we use that to set the state for list
@@ -214,10 +204,7 @@ class App extends Component {
       });
 
       console.log("Ran");
-      this.socket.on('Results',data => {
-        console.log(data);
-      });
-      this.socket.emit("Query 5",this.state.list);
+      this.state.socket.emit("Query 5",this.state.list);
 
       // Finally, we need to reset the form
       newItem.classList.remove("is-danger");
@@ -229,7 +216,39 @@ class App extends Component {
   }
 
   componentDidMount() {
-    this.state.socket.on('Results',data => {
+    this.state.socket.on('Query 2',data => {
+      if(!this.state.updated) {
+        console.log(data);
+        var l = data.length;
+        var temp = [];
+
+        for(var i = 0; i < l; i++) {
+          temp.push(data[i]["Y"]);
+        }
+        
+        console.log(temp);
+
+        this.setState({
+          labels: ["February", "March", "April", "May", "June","July", "August",
+                  "September", "October", "November"],
+          datasets: [{
+            fill: false,
+            lineTension: 0.5,
+            backgroundColor: 'rgba(75,192,192,1)',
+            borderColor: 'rgba(0,0,0,1)',
+            borderWidth: 2,
+            data: temp
+          }],
+        });
+
+        info["labels"] = this.state.labels;
+        info["datasets"][0] = this.state.datasets;
+
+        setInterval(() => {}, 10000);
+      }
+    });
+
+    this.state.socket.on('Query 3',data => {
       if(!this.state.updated) {
         var l = data.length;
         var temp = [];
@@ -263,6 +282,64 @@ class App extends Component {
         });
       }
     });
+
+    this.state.socket.on('Query 4',data => {
+      console.log("Starting Graphing 4");
+      if(!this.state.updated) {
+        var l = data.length;
+        var temp1 = [];
+        var temp2 = [];
+        var temp3 = [];
+
+        for(var i = 0; i < l; i++) {
+          temp1.push(data[i]["Y1"]);
+          temp2.push(data[i]["Y2"]);
+          temp3.push(data[i]["Y3"]);
+        }
+        
+        console.log(temp1);
+        console.log(temp2);
+        console.log(temp3);
+
+        this.setState({
+          labels: ["February", "March", "April", "May", "June","July", "August",
+                  "September", "October", "November"],
+          datasets: [{
+            fill: false,
+            lineTension: 0.5,
+            backgroundColor: 'rgba(75,192,192,1)',
+            borderColor: 'rgba(0,0,0,1)',
+            borderWidth: 2,
+            data: temp1
+          },
+          {
+            fill: false,
+            lineTension: 0.5,
+            backgroundColor: 'rgba(75,192,192,1)',
+            borderColor: 'rgba(0,0,0,1)',
+            borderWidth: 2,
+            data: temp2
+          },
+          {
+            fill: false,
+            lineTension: 0.5,
+            backgroundColor: 'rgba(75,192,192,1)',
+            borderColor: 'rgba(0,0,0,1)',
+            borderWidth: 2,
+            data: temp3
+          }],
+        });
+
+        info["labels"] = this.state.labels;
+        info["datasets"] = this.state.datasets;
+
+        setInterval(() => {}, 10000);
+
+        this.setState({
+          updated: true
+        });
+      }
+    });
   }
 
   render() {
@@ -278,7 +355,7 @@ class App extends Component {
             options={{
               title:{
                 display:true,
-                text:'Flights to Country per Month',
+                text:'Figure out how to do this',
                 fontSize:20
               },
               animation: {
@@ -392,14 +469,13 @@ class App extends Component {
                 <div class="flex-container-body">
                     <div>
                         <p>
-                        Viewing monthly flights originating from COVID hotspots (Defined as countries that have had the most cases or most cases
-                        per capita during some month in 2020) and traveling to a user selected country. The first calculation will be identifying
-                        COVID hotspots, based on the maximum number of cases (or cases per capita) after summing total cases per month in each country.
-                        The second calculation will be a summation of all flights out of these countries in a given timespan. The graph will display
-                        flights from these hotspots to the user-defined country of interest over time. The motivation of this trend query is to
-                        demonstrate to a user how the spread of COVID-19 may have been impacted by airline travel. A large influx of flights into
-                        a specific country from a current COVID-19 hotspot could cause an outbreak in that country. This may also be combined with
-                        query 4 to provide insight into how movement out of a country is impacted by a prevalence of cases in the country.
+                            Pulvinar elementum integer enim neque volutpat. Posuere morbi leo urna molestie at elementum eu. Interdum velit euismod
+                            in pellentesque. Velit aliquet sagittis id consectetur purus ut faucibus pulvinar. Hac habitasse platea dictumst quisque
+                            sagittis purus. Imperdiet massa tincidunt nunc pulvinar sapien et ligula. Malesuada fames ac turpis egestas. Facilisis
+                            gravida neque convallis a cras semper. Amet massa vitae tortor condimentum lacinia quis. Duis at consectetur lorem donec
+                            massa. Vulputate eu scelerisque felis imperdiet. Mi proin sed libero enim sed faucibus turpis in. Ut aliquam purus sit
+                            amet luctus venenatis lectus magna fringilla. Etiam dignissim diam quis enim lobortis. Ac odio tempor orci dapibus
+                            ultrices in iaculis nunc sed. Ultrices gravida dictum fusce ut placerat orci nulla.
                         </p>
                     </div>
                     <div className="content">
@@ -461,28 +537,12 @@ class App extends Component {
                         </section>
                         <section className="section">
                           <form className="form" id="addItemForm">
-                            <h2>Airline 1</h2>
+                          <h2>Country</h2>
                             <input
                               type="text"
                               className="input"
-                              id="search1"
-                              placeholder="Airline..."
-                              autoComplete="off"
-                            />
-                            <h2>Airline 2</h2>
-                            <input
-                              type="text"
-                              className="input"
-                              id="search2"
-                              placeholder="Airline..."
-                              autoComplete="off"
-                            />
-                            <h2>Airline 3</h2>
-                            <input
-                              type="text"
-                              className="input"
-                              id="search3"
-                              placeholder="Arline..."
+                              id="search"
+                              placeholder="Country..."
                               autoComplete="off"
                             />
                             <button className="button is-info" onClick={this.addItem3}>
@@ -492,6 +552,8 @@ class App extends Component {
                         </section>
                       </div>
                     </div>
+                    {!this.state.updated && emptyState}
+                    {this.state.updated && loadedState}
                 </div>
               </div>
             </Route>
@@ -523,12 +585,28 @@ class App extends Component {
                         </section>
                         <section className="section">
                           <form className="form" id="addItemForm">
-                            <h2>Country</h2>
+                          <h2>Airline 1</h2>
                             <input
                               type="text"
                               className="input"
-                              id="search"
-                              placeholder="Country..."
+                              id="search1"
+                              placeholder="Airline..."
+                              autoComplete="off"
+                            />
+                            <h2>Airline 2</h2>
+                            <input
+                              type="text"
+                              className="input"
+                              id="search2"
+                              placeholder="Airline..."
+                              autoComplete="off"
+                            />
+                            <h2>Airline 3</h2>
+                            <input
+                              type="text"
+                              className="input"
+                              id="search3"
+                              placeholder="Arline..."
                               autoComplete="off"
                             />
                             <button className="button is-info" onClick={this.addItem4}>
@@ -538,6 +616,8 @@ class App extends Component {
                         </section>
                       </div>
                     </div>
+                    {!this.state.updated && emptyState}
+                    {this.state.updated && loadedState}
                 </div>
               </div>
             </Route>
