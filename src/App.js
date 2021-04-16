@@ -48,6 +48,15 @@ const info2 = {
   ]
 }
 
+const info3 = {
+  labels: [],
+  datasets: [
+    {
+      
+    }
+  ]
+}
+
 class App extends Component {
   constructor(props) {
     super(props);
@@ -60,7 +69,10 @@ class App extends Component {
       opts: {}, // Options
       labels2: [],
       dataset2: [],
-      opts2: {}
+      opts2: {},
+      labels3: [],
+      dataset3: [],
+      opts3: {}
     };
     // this.buttonClick = this.buttonClick.bind(this);
     this.addItem1 = this.addItem1.bind(this);
@@ -76,27 +88,35 @@ class App extends Component {
 
     // Create variables for our list, the item to add, and our form
     let list = this.state.list;
-    const newItem = document.getElementById("search");
+    const newItem1 = document.getElementById("search1");
+    const newItem2 = document.getElementById("search2");
+    const newItem3 = document.getElementById("search3");
     const form = document.getElementById("addItemForm");
 
     // If our input has a value
-    if (newItem.value !== "") {
+    if (newItem1.value !== "" && newItem2.value !== "" && newItem3.value !== "") {
       // Add the new item to the end of our list array
-      list.push(newItem.value);
+      list.push(newItem1.value);
+      list.push(newItem2.value);
+      list.push(newItem3.value);
       // Then we use that to set the state for list
       this.setState({
         list: list
       });
 
-      console.log("Ran");
+      console.log("Ran 1");
       this.state.socket.emit("Query 1",this.state.list);
 
       // Finally, we need to reset the form
-      newItem.classList.remove("is-danger");
+      newItem1.classList.remove("is-danger");
+      newItem2.classList.remove("is-danger");
+      newItem3.classList.remove("is-danger");
       form.reset();
     } else {
       // If the input doesn't have a value, make the border red since it's required
-      newItem.classList.add("is-danger");
+      newItem1.classList.add("is-danger");
+      newItem2.classList.add("is-danger");
+      newItem3.classList.add("is-danger");
     }
   }
 
@@ -228,6 +248,202 @@ class App extends Component {
   }
 
   componentDidMount() {
+    this.state.socket.on('Query 1',data => {
+      if(!this.state.updated) {
+        console.log(data);
+        var l = data.length;
+        var N1 = [];
+        var ND1 = [];
+        var N2 = [];
+        var ND2 = [];
+        var N3 = [];
+        var ND3 = [];
+        var sum1 = [];
+        var sum2 = [];
+        var sum3 = [];
+        var li = [];
+
+        sum1.push(data[100]["DBP1"]);
+        sum2.push(data[100]["DBP2"]);
+        sum3.push(data[100]["DBP3"]);
+        sum1.push(data[100]["S1"]);
+        sum2.push(data[100]["S2"]);
+        sum3.push(data[100]["S3"]);
+        sum1.push(data[100]["A1"]);
+        sum2.push(data[100]["A2"]);
+        sum3.push(data[100]["A3"]);
+        sum1.push(data[100]["HW1"]);
+        sum2.push(data[100]["HW2"]);
+        sum3.push(data[100]["HW3"]);
+
+        var str1 = this.state.list[0];
+        var str2 = this.state.list[1];
+        var str3 = this.state.list[2];
+
+        for(var i = 0; i < l; i++) {
+          li.push(data[i]["X"]);
+          N1.push(data[i]["N1"]);
+          ND1.push(data[i]["N1"]);
+          N2.push(data[i]["N2"]);
+          ND2.push(data[i]["ND2"]);
+          N3.push(data[i]["N3"]);
+          ND3.push(data[i]["ND3"]);
+        }
+        
+        console.log(li);
+        console.log(ND1);
+        console.log(ND2);
+        console.log(ND3);
+        console.log(sum1);
+        console.log(sum2);
+        console.log(sum3);
+
+
+        this.setState({
+          labels: li,
+          datasets: [{
+            fill: false,
+            label: str1.concat(' Cases'),
+            lineTension: 0.5,
+            borderColor: 'rgba(22,150,210)',
+            borderWidth: 1,
+            data: N1
+          },
+          {
+            fill: false,
+            label: str2.concat(' Cases'),
+            lineTension: 0.5,
+            borderColor: 'rgba(220,20,60)',
+            borderWidth: 1,
+            data: N2
+          },
+          {
+            fill: false,
+            label: str3.concat(' Cases'),
+            lineTension: 0.5,
+            borderColor: 'rgba(0,0,1)',
+            borderWidth: 1,
+            data: N3
+          }],
+
+          opts: {
+            title:{
+              display:true,
+              text:'New Cases for '.concat(str1).concat(', ').concat(str2).concat(', and ').concat(str3),
+              fontSize:20
+            },
+            animation: {
+              duration: 0
+            },
+            hover: {
+              animationDuration: 0
+            },
+            responsiveAnimationDuration: 0,
+            legend: {
+              display:true
+            }
+          },
+
+          labels2: li,
+
+          dataset2: [{
+            fill: false,
+            label: str1.concat(' Deaths'),
+            lineTension: 0.5,
+            borderColor: 'rgba(22,150,210)',
+            borderWidth: 1,
+            data: ND1
+          },
+          {
+            fill: false,
+            label: str2.concat(' Deaths'),
+            lineTension: 0.5,
+            borderColor: 'rgba(220,20,60)',
+            borderWidth: 1,
+            data: ND2
+          },
+          {
+            fill: false,
+            label: str3.concat(' Deaths'),
+            lineTension: 0.5,
+            borderColor: 'rgb(0,0,1)',
+            borderWidth: 1,
+            data: ND3
+          }],
+
+          opts2: {
+            title:{
+              display:true,
+              text:'New Deaths for '.concat(str1).concat(', ').concat(str2).concat(', and ').concat(str3),
+              fontSize:20
+            },
+            animation: {
+              duration: 0
+            },
+            hover: {
+              animationDuration: 0
+            },
+            responsiveAnimationDuration: 0,
+            legend: {
+              display:true
+            }
+          },
+
+          labels3: ["Diabetes Rate", "Smoking Rate", "Age Rate over 60", "Hand Washing Station Prevalence"],
+
+          datasets3: [{
+            label: str1,
+            backgroundColor: 'rgba(65,105,225)',
+            data: sum1,
+          },
+          {
+            label: str2,
+            backgroundColor: 'rgba(220,20,60)',
+            data: sum2,
+          },
+          {
+            label: str3,
+            backgroundColor: 'rgba(34,139,34)',
+            data: sum3,
+          }],
+
+          opts3: {
+            title:{
+              display:true,
+              text:'Summary statistics for '.concat(str1).concat(', ').concat(str2).concat(', and ').concat(str3),
+              fontSize:20
+            },
+            animation: {
+              duration: 0
+            },
+            hover: {
+              animationDuration: 0
+            },
+            responsiveAnimationDuration: 0,
+            legend: {
+              display:true
+            }
+          }
+        });
+
+        console.log(this.state.datasets3);
+
+        info["labels"] = this.state.labels;
+        info["datasets"] = this.state.datasets;
+        info2["labels"] = this.state.labels2;
+        info2["datasets"] = this.state.dataset2;
+        info3["labels"] = this.state.labels3;
+        info3["datasets"] = this.state.datasets3;
+        console.log(info3);
+
+        setInterval(() => {}, 10000);
+
+        this.setState({
+          updated: true
+        });
+      }
+    });
+
     this.state.socket.on('Query 2',data => {
       if(!this.state.updated) {
         console.log(data);
@@ -587,6 +803,223 @@ class App extends Component {
         });
       }
     });
+
+    this.state.socket.on('Query 5',data => {
+      if(!this.state.updated) {
+        var l = data.length;
+        var c = [];
+        var l1 = [];
+        var l2 = [];
+        var l3 = [];
+        var h1 = [];
+        var h2 = [];
+        var h3 = [];
+        var cs = [];
+        var l1s = [];
+        var l2s = [];
+        var l3s = [];
+        var h1s = [];
+        var h2s = [];
+        var h3s = [];
+        
+        var str = this.state.list[0];
+
+        for(var i = 0; i < l; i++) {
+          c.push(data[i]["C"]);
+          l1.push(data[i]["L1"]);
+          l2.push(data[i]["L2"]);
+          l3.push(data[i]["L3"]);
+          h1.push(data[i]["H1"]);
+          h2.push(data[i]["H2"]);
+          h3.push(data[i]["H3"]);
+          cs.push(data[i]["CS"]);
+          l1s.push(data[i]["L1s"]);
+          l2s.push(data[i]["L2S"]);
+          l3s.push(data[i]["L3S"]);
+          h1s.push(data[i]["H1S"]);
+          h2s.push(data[i]["H2S"]);
+          h3s.push(data[i]["H3S"]);
+        }
+        
+        console.log(c);
+
+        this.setState({
+          labels: ["January", "February", "March", "April", "May", "June","July", "August",
+                  "September", "October", "November", "December"],
+          datasets: [{
+            fill: false,
+            label: str,
+            lineTension: 0.5,
+            borderColor: 'rgb(22,150,210)',
+            borderWidth: 2,
+            data: cs
+          },
+          {
+            fill: false,
+            label: 'Burundi',
+            lineTension: 0.5,
+            borderColor: 'rgb(210,210,210)',
+            borderWidth: 2,
+            data: l1s
+          },
+          {
+            fill: false,
+            label: 'Nicaragua',
+            lineTension: 0.5,
+            borderColor: 'rgb(0,0,0)',
+            borderWidth: 2,
+            data: l2s
+          },
+          {
+            fill: false,
+            label: 'Belarus',
+            lineTension: 0.5,
+            borderColor: 'rgb(253,191,17)',
+            borderWidth: 2,
+            data: l3s
+          },
+          {
+            fill: false,
+            label: 'Libya',
+            lineTension: 0.5,
+            borderColor: 'rgb(139,0,139)',
+            borderWidth: 2,
+            data: h1s
+          },
+          {
+            fill: false,
+            label: 'Eritrea',
+            lineTension: 0.5,
+            borderColor: 'rgb(85,183,72)',
+            borderWidth: 2,
+            data: h2s
+          },
+          {
+            fill: false,
+            label: 'Honduras',
+            lineTension: 0.5,
+            borderColor: 'rgb(219,43,39)',
+            borderWidth: 2,
+            data: h3s
+          }],
+
+          opts: {
+            title:{
+              display:true,
+              text:'Stringency per month in '.concat(str).concat(' and the 3 highest/lowest stringency countries'),
+              fontSize:20
+            },
+            animation: {
+              duration: 0
+            },
+            hover: {
+              animationDuration: 0
+            },
+            responsiveAnimationDuration: 0,
+            legend: {
+              display:true
+            }
+          },
+
+          labels2: ["January", "February", "March", "April", "May", "June","July", "August",
+          "September", "October", "November", "December"],
+          dataset2: [{
+            label: str,
+            backgroundColor: 'rgba(65,105,225)',
+            data: c,
+          },
+          {
+            label: 'Burundi',
+            backgroundColor: 'rgba(220,20,60)',
+            data: l1,
+          },
+          {
+            label: 'Nicaragua',
+            backgroundColor: 'rgba(34,139,34)',
+            data: l2,
+          },
+          {
+            label: 'Belarus',
+            backgroundColor: 'rgba(0, 0, 1)',
+            data: l3,
+          }],
+
+          opts2: {
+            title:{
+              display:true,
+              text:'Deaths per million per month in '.concat(str).concat(' and the three least stringent countries'),
+              fontSize:20
+            },
+            animation: {
+              duration: 0
+            },
+            hover: {
+              animationDuration: 0
+            },
+            responsiveAnimationDuration: 0,
+            legend: {
+              display:true
+            }
+          },
+
+          labels3: ["January", "February", "March", "April", "May", "June","July", "August",
+          "September", "October", "November", "December"],
+          dataset3: [{
+            label: str,
+            backgroundColor: 'rgba(65,105,225)',
+            data: c,
+          },
+          {
+            label: 'Libya',
+            backgroundColor: 'rgba(220,20,60)',
+            data: h1,
+          },
+          {
+            label: 'Eritrea',
+            backgroundColor: 'rgba(34,139,34)',
+            data: h2,
+          },
+          {
+            label: 'Honduras',
+            backgroundColor: 'rgba(0, 0, 1)',
+            data: h3,
+          }],
+
+          opts3: {
+            title:{
+              display:true,
+              text:'Deaths per million per month in '.concat(str).concat(' and the three most stringent countries'),
+              fontSize:20
+            },
+            animation: {
+              duration: 0
+            },
+            hover: {
+              animationDuration: 0
+            },
+            responsiveAnimationDuration: 0,
+            legend: {
+              display:true
+            }
+          },
+        });
+
+        console.log(this.state.dataset2);
+
+        info["labels"] = this.state.labels;
+        info["datasets"] = this.state.datasets;
+        info2["labels"] = this.state.labels2;
+        info2["datasets"] = this.state.dataset2;
+        info3["labels"] = this.state.labels3;
+        info3["datasets"] = this.state.dataset3;
+
+        setInterval(() => {}, 10000);
+
+        this.setState({
+          updated: true
+        });
+      }
+    });
   }
 
   render() {
@@ -617,6 +1050,23 @@ class App extends Component {
       </div>
     );
 
+    let loadedState3Line = (
+      <div className="loaded">
+          <Line
+            data={info}
+            options={this.state.opts}
+          />
+          <Line
+            data={info2}
+            options={this.state.opts2}
+          />
+          <Bar
+            data={info3}
+            options={this.state.opts3}
+          />
+      </div>
+    );
+
     let loadedState2Bar = (
       <div className="loaded">
           <Line
@@ -626,6 +1076,23 @@ class App extends Component {
           <Bar
             data={info2}
             options={this.state.opts2}
+          />
+      </div>
+    );
+
+    let loadedState3Bar = (
+      <div className="loaded">
+          <Line
+            data={info}
+            options={this.state.opts}
+          />
+          <Bar
+            data={info2}
+            options={this.state.opts2}
+          />
+          <Bar
+            data={info3}
+            options={this.state.opts3}
           />
       </div>
     );
@@ -692,19 +1159,28 @@ class App extends Component {
                     <div className="content">
                       <div className="container">
                         <section className="section">
-                          <ul>
-                            {this.state.list.map(item => (
-                            <li key={item}>{item}</li>
-                            ))}
-                          </ul>
-                        </section>
-                        <section className="section">
                           <form className="form" id="addItemForm">
                             <h2>Country</h2>
                             <input
                               type="text"
                               className="input"
-                              id="search"
+                              id="search1"
+                              placeholder="Country..."
+                              autoComplete="off"
+                            />
+                            <h2>Country</h2>
+                            <input
+                              type="text"
+                              className="input"
+                              id="search2"
+                              placeholder="Country..."
+                              autoComplete="off"
+                            />
+                            <h2>Country</h2>
+                            <input
+                              type="text"
+                              className="input"
+                              id="search3"
                               placeholder="Country..."
                               autoComplete="off"
                             />
@@ -715,6 +1191,8 @@ class App extends Component {
                         </section>
                       </div>
                     </div>
+                    {!this.state.updated && emptyState}
+                    {this.state.updated && loadedState3Line}
                 </div>
               </div>
             </Route> 
@@ -737,13 +1215,6 @@ class App extends Component {
                     </div>
                     <div className="content">
                       <div className="container">
-                        <section className="section">
-                          <ul>
-                            {this.state.list.map(item => (
-                            <li key={item}>{item}</li>
-                            ))}
-                          </ul>
-                        </section>
                         <section className="section">
                           <form className="form" id="addItemForm">
                             <h2>Country</h2>
@@ -786,13 +1257,6 @@ class App extends Component {
                     <div className="content">
                       <div className="container">
                         <section className="section">
-                          <ul>
-                            {this.state.list.map(item => (
-                            <li key={item}>{item}</li>
-                            ))}
-                          </ul>
-                        </section>
-                        <section className="section">
                           <form className="form" id="addItemForm">
                           <h2>Country</h2>
                             <input
@@ -833,13 +1297,6 @@ class App extends Component {
                     </div>
                     <div className="content">
                       <div className="container">
-                        <section className="section">
-                          <ul>
-                            {this.state.list.map(item => (
-                            <li key={item}>{item}</li>
-                            ))}
-                          </ul>
-                        </section>
                         <section className="section">
                           <form className="form" id="addItemForm">
                           <h2>Airline 1</h2>
@@ -896,13 +1353,6 @@ class App extends Component {
                     <div className="content">
                       <div className="container">
                         <section className="section">
-                          <ul>
-                            {this.state.list.map(item => (
-                            <li key={item}>{item}</li>
-                            ))}
-                          </ul>
-                        </section>
-                        <section className="section">
                           <form className="form" id="addItemForm">
                             <h2>Country</h2>
                             <input
@@ -919,6 +1369,8 @@ class App extends Component {
                         </section>
                       </div>
                     </div>
+                    {!this.state.updated && emptyState}
+                    {this.state.updated && loadedState3Bar}
                 </div>
               </div>
             </Route> 
