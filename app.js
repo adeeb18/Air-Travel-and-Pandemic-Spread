@@ -48,9 +48,83 @@ io.on("connection", (socket) => {
         });
 
         const result = await connection.execute(
-            `SELECT *
-            FROM "ADEEB.RASHID"."PROJECT_FLIGHT"
-            FETCH FIRST 10 ROWS ONLY`
+          `SELECT D1 AS X, NVL(N1,0) N1, NVL(DECODE(SIGN(ND1),-1,0,ND1),0) ND1, NVL(N2,0) as N2, NVL(DECODE(SIGN(ND2),-1,0,ND2),0) ND2, NVL(N3,0) N3, NVL(DECODE(SIGN(ND3),-1,0,ND3),0) ND3, NVL(DBP1,0) DBP1, NVL(DBP2,0) DBP2, NVL(DBP3, 0) DBP3, NVL(S1, 0) S1,NVL(S2, 0) S2,NVL(S3, 0) S3,NVL(A1, 0) A1,NVL(A2,0) A2,NVL(A3,0) A3,NVL(HW1,0) HW1,NVL(HW2,0) HW2,NVL(HW3,0) HW3
+          FROM
+            (SELECT DAY D1, NEW_CASES N1, NEW_DEATHS ND1
+            FROM PROJECT_STATISTIC2020
+            WHERE COUNTRY_NAME = '`+ arguments[0] + `')
+            FULL OUTER JOIN
+            (SELECT DAY D2, NEW_CASES N2, NEW_DEATHS ND2
+            FROM PROJECT_STATISTIC2020
+            WHERE COUNTRY_NAME = '`+ arguments[1] + `')
+            ON D1 = D2
+            FULL OUTER JOIN
+            (SELECT DAY D3, NEW_CASES N3, NEW_DEATHS ND3
+            FROM PROJECT_STATISTIC2020
+            WHERE COUNTRY_NAME = '`+ arguments[2] + `')
+            ON D1 = D3
+            FULL OUTER JOIN
+            (SELECT DAY DDBP1, DIABETES_PREVALENCE DBP1
+            FROM PROJECT_STATISTICNEW
+            WHERE COUNTRY_NAME = '`+ arguments[0] + `')
+            ON D1 = DDBP1
+            FULL OUTER JOIN
+            (SELECT DAY DDBP2, DIABETES_PREVALENCE DBP2
+            FROM PROJECT_STATISTICNEW
+            WHERE COUNTRY_NAME = '`+ arguments[1] + `')
+            ON D1 = DDBP2
+            FULL OUTER JOIN
+            (SELECT DAY DDBP3, DIABETES_PREVALENCE DBP3
+            FROM PROJECT_STATISTICNEW
+            WHERE COUNTRY_NAME = '`+ arguments[2] + `')
+            ON D1 = DDBP3
+            FULL OUTER JOIN
+            (SELECT DAY DS1, FEMALE_SMOKERS + MALE_SMOKERS S1
+            FROM PROJECT_STATISTICNEW
+            WHERE COUNTRY_NAME = '`+ arguments[0] + `')
+            ON D1 = DS1
+            FULL OUTER JOIN
+            (SELECT DAY DS2, FEMALE_SMOKERS + MALE_SMOKERS S2
+            FROM PROJECT_STATISTICNEW
+            WHERE COUNTRY_NAME = '`+ arguments[1] + `')
+            ON D1 = DS2
+            FULL OUTER JOIN
+            (SELECT DAY DS3, FEMALE_SMOKERS + MALE_SMOKERS S3
+            FROM PROJECT_STATISTICNEW
+            WHERE COUNTRY_NAME = '`+ arguments[2] + `')
+            ON D1 = DS3
+            FULL OUTER JOIN
+            (SELECT DAY DA1, AGED_65_OR_OLDER A1
+            FROM PROJECT_STATISTICNEW
+            WHERE COUNTRY_NAME = '`+ arguments[0] + `')
+            ON D1 = DA1
+            FULL OUTER JOIN
+            (SELECT DAY DA2, AGED_65_OR_OLDER A2
+            FROM PROJECT_STATISTICNEW
+            WHERE COUNTRY_NAME = '`+ arguments[1] + `')
+            ON D1 = DA2
+            FULL OUTER JOIN
+            (SELECT DAY DA3, AGED_65_OR_OLDER A3
+            FROM PROJECT_STATISTICNEW
+            WHERE COUNTRY_NAME = '`+ arguments[2] + `')
+            ON D1 = DA3
+            FULL OUTER JOIN
+            (SELECT DAY DHW1, HANDWASHING_FACILITIES HW1
+            FROM PROJECT_STATISTICNEW
+            WHERE COUNTRY_NAME = '`+ arguments[0] + `')
+            ON D1 = DHW1
+            FULL OUTER JOIN
+            (SELECT DAY DHW2, HANDWASHING_FACILITIES HW2
+            FROM PROJECT_STATISTICNEW
+            WHERE COUNTRY_NAME = '`+ arguments[1] + `')
+            ON D1 = DHW2
+            FULL OUTER JOIN
+            (SELECT DAY DHW3, HANDWASHING_FACILITIES HW3
+            FROM PROJECT_STATISTICNEW
+            WHERE COUNTRY_NAME = '`+ arguments[2] + `')
+            ON D1 = DHW3
+            WHERE D1 IS NOT NULL
+            ORDER BY D1`
         );
         console.log(result.rows);
         return result.rows;
@@ -68,7 +142,7 @@ io.on("connection", (socket) => {
     }
 
     let se= run(arguments);
-    se.then(value => io.emit("Results",value));
+    se.then(value => io.emit("Query 1",value));
   });
 
 
@@ -555,10 +629,316 @@ io.on("connection", (socket) => {
         });
 
         const result = await connection.execute(
-            `SELECT *
-            FROM "PROJECT_AIRPORT"
-            FETCH FIRST 10 ROWS ONLY`
+            `SELECT X, NVL(C,0) C, NVL(L1,0) L1, NVL(L2,0) L2, NVL(L3,0) L3, NVL(H1,0) H1, NVL(H2,0) H2, NVL(H3,0) H3, NVL(CS,0) CS, NVL(L1S,0) L1S, NVL(L2S,0) L2S , NVL(L3S,0) L3S, NVL(H1S,0) H1S, NVL(H2S,0) H2S , NVL(H3S,0) H3S FROM
+            (
+            SELECT EXTRACT(MONTH FROM DAY) X, ROUND(SUM((NEW_DEATHS)*1000000/POPULATION), 6) C
+            FROM PROJECT_STATISTIC2020 
+            JOIN PROJECT_COUNTRY 
+            ON COUNTRY_NAME = NAME
+            WHERE COUNTRY_NAME = '`+ arguments[0] +`'
+            GROUP  BY  EXTRACT(MONTH FROM DAY), POPULATION
+            ORDER BY EXTRACT(MONTH FROM DAY)
+            )
+            FULL OUTER JOIN
+            (
+            SELECT EXTRACT(MONTH FROM DAY) XL1, ROUND(SUM((NEW_DEATHS)*1000000/POPULATION),6) L1
+            FROM PROJECT_STATISTIC2020 
+            JOIN PROJECT_COUNTRY 
+            ON COUNTRY_NAME = NAME
+            WHERE COUNTRY_NAME = (
+            SELECT LEASTSTRIN FROM(
+            SELECT COUNTRY_NAME LEASTSTRIN, ROW_NUMBER() OVER (ORDER BY S) RN FROM(
+            SELECT COUNTRY_NAME, ROUND(AVG(STRINGENCY_INDEX) , 4) S
+            FROM(
+            SELECT COUNTRY_NAME, STRINGENCY_INDEX
+            FROM PROJECT_STATISTICNEW
+            WHERE STRINGENCY_INDEX IS NOT NULL
+            )
+            GROUP BY COUNTRY_NAME
+            ORDER BY S
+            )
+            WHERE ROWNUM < 4)
+            WHERE RN = 1
+            )
+            GROUP  BY  EXTRACT(MONTH FROM DAY), POPULATION
+            ORDER BY EXTRACT(MONTH FROM DAY)
+            )
+            ON X = XL1
+            FULL OUTER JOIN
+            (
+            SELECT EXTRACT(MONTH FROM DAY) XL2, ROUND(SUM((NEW_DEATHS)*1000000/POPULATION),6) L2
+            FROM PROJECT_STATISTIC2020 
+            JOIN PROJECT_COUNTRY 
+            ON COUNTRY_NAME = NAME
+            WHERE COUNTRY_NAME = (
+            SELECT LEASTSTRIN FROM(
+            SELECT COUNTRY_NAME LEASTSTRIN, ROW_NUMBER() OVER (ORDER BY S) RN FROM(
+            SELECT COUNTRY_NAME, ROUND(AVG(STRINGENCY_INDEX) , 4) S
+            FROM(
+            SELECT COUNTRY_NAME, STRINGENCY_INDEX
+            FROM PROJECT_STATISTICNEW
+            WHERE STRINGENCY_INDEX IS NOT NULL
+            )
+            GROUP BY COUNTRY_NAME
+            ORDER BY S
+            )
+            WHERE ROWNUM < 4)
+            WHERE RN = 2
+            )
+            GROUP  BY  EXTRACT(MONTH FROM DAY), POPULATION
+            ORDER BY EXTRACT(MONTH FROM DAY)
+            )
+            ON XL2 = X
+            FULL OUTER JOIN
+            (
+            SELECT EXTRACT(MONTH FROM DAY) XL3, ROUND(SUM((NEW_DEATHS)*1000000/POPULATION),6) L3
+            FROM PROJECT_STATISTIC2020 
+            JOIN PROJECT_COUNTRY 
+            ON COUNTRY_NAME = NAME
+            WHERE COUNTRY_NAME = (
+            SELECT LEASTSTRIN FROM(
+            SELECT COUNTRY_NAME LEASTSTRIN, ROW_NUMBER() OVER (ORDER BY S) RN FROM(
+            SELECT COUNTRY_NAME, ROUND(AVG(STRINGENCY_INDEX) , 4) S
+            FROM(
+            SELECT COUNTRY_NAME, STRINGENCY_INDEX
+            FROM PROJECT_STATISTICNEW
+            WHERE STRINGENCY_INDEX IS NOT NULL
+            )
+            GROUP BY COUNTRY_NAME
+            ORDER BY S
+            )
+            WHERE ROWNUM < 4)
+            WHERE RN = 3
+            )
+            GROUP  BY  EXTRACT(MONTH FROM DAY), POPULATION
+            ORDER BY EXTRACT(MONTH FROM DAY)
+            )
+            ON X = XL3
+            FULL OUTER JOIN
+            (
+            SELECT EXTRACT(MONTH FROM DAY) XH1, ROUND(SUM((NEW_DEATHS)*1000000/POPULATION),6) H1
+            FROM PROJECT_STATISTIC2020 
+            JOIN PROJECT_COUNTRY 
+            ON COUNTRY_NAME = NAME
+            WHERE COUNTRY_NAME = (
+            SELECT MOSTSTRIN FROM(
+            SELECT COUNTRY_NAME MOSTSTRIN, ROW_NUMBER() OVER (ORDER BY S) RN FROM(
+            SELECT COUNTRY_NAME, ROUND(AVG(STRINGENCY_INDEX) , 4) S
+            FROM(
+            SELECT COUNTRY_NAME, STRINGENCY_INDEX
+            FROM PROJECT_STATISTICNEW
+            WHERE STRINGENCY_INDEX IS NOT NULL
+            )
+            GROUP BY COUNTRY_NAME
+            ORDER BY S DESC
+            )
+            WHERE ROWNUM < 4)
+            WHERE RN = 1
+            )
+            GROUP  BY  EXTRACT(MONTH FROM DAY), POPULATION
+            ORDER BY EXTRACT(MONTH FROM DAY)
+            )
+            ON X = XH1
+            FULL OUTER JOIN
+            (
+            SELECT EXTRACT(MONTH FROM DAY) XH2, ROUND(SUM((NEW_DEATHS)*1000000/POPULATION),6) H2
+            FROM PROJECT_STATISTIC2020 
+            JOIN PROJECT_COUNTRY 
+            ON COUNTRY_NAME = NAME
+            WHERE COUNTRY_NAME = (
+            SELECT MOSTSTRIN FROM(
+            SELECT COUNTRY_NAME MOSTSTRIN, ROW_NUMBER() OVER (ORDER BY S) RN FROM(
+            SELECT COUNTRY_NAME, ROUND(AVG(STRINGENCY_INDEX) , 4) S
+            FROM(
+            SELECT COUNTRY_NAME, STRINGENCY_INDEX
+            FROM PROJECT_STATISTICNEW
+            WHERE STRINGENCY_INDEX IS NOT NULL
+            )
+            GROUP BY COUNTRY_NAME
+            ORDER BY S DESC
+            )
+            WHERE ROWNUM < 4)
+            WHERE RN = 2
+            )
+            GROUP  BY  EXTRACT(MONTH FROM DAY), POPULATION
+            ORDER BY EXTRACT(MONTH FROM DAY)
+            )
+            ON X = XH2
+            FULL OUTER JOIN
+            (
+            SELECT EXTRACT(MONTH FROM DAY) XH3, ROUND(SUM((NEW_DEATHS)*1000000/POPULATION),6) H3
+            FROM PROJECT_STATISTIC2020 
+            JOIN PROJECT_COUNTRY 
+            ON COUNTRY_NAME = NAME
+            WHERE COUNTRY_NAME = (
+            SELECT MOSTSTRIN FROM(
+            SELECT COUNTRY_NAME MOSTSTRIN, ROW_NUMBER() OVER (ORDER BY S) RN FROM(
+            SELECT COUNTRY_NAME, ROUND(AVG(STRINGENCY_INDEX) , 4) S
+            FROM(
+            SELECT COUNTRY_NAME, STRINGENCY_INDEX
+            FROM PROJECT_STATISTICNEW
+            WHERE STRINGENCY_INDEX IS NOT NULL
+            )
+            GROUP BY COUNTRY_NAME
+            ORDER BY S DESC
+            )
+            WHERE ROWNUM < 4)
+            WHERE RN = 3
+            )
+            GROUP  BY  EXTRACT(MONTH FROM DAY), POPULATION
+            ORDER BY EXTRACT(MONTH FROM DAY)
+            )
+            ON X = XH3
+            FULL OUTER JOIN
+            (
+            SELECT EXTRACT(MONTH FROM DAY) XL1S, ROUND(AVG(STRINGENCY_INDEX), 6) L1S
+            FROM PROJECT_STATISTICNEW
+            WHERE COUNTRY_NAME = (
+            SELECT LEASTSTRIN FROM(
+            SELECT COUNTRY_NAME LEASTSTRIN, ROW_NUMBER() OVER (ORDER BY S) RN FROM(
+            SELECT COUNTRY_NAME, ROUND(AVG(STRINGENCY_INDEX) , 4) S
+            FROM(
+            SELECT COUNTRY_NAME, STRINGENCY_INDEX
+            FROM PROJECT_STATISTICNEW
+            WHERE STRINGENCY_INDEX IS NOT NULL
+            )
+            GROUP BY COUNTRY_NAME
+            ORDER BY S
+            )
+            WHERE ROWNUM < 4)
+            WHERE RN = 1
+            )
+            GROUP BY EXTRACT(MONTH FROM DAY)
+            ORDER BY XL1S
+            )
+            ON XL1S = X
+            FULL OUTER JOIN
+            (
+            SELECT EXTRACT(MONTH FROM DAY) XL2S, ROUND(AVG(STRINGENCY_INDEX), 6) L2S
+            FROM PROJECT_STATISTICNEW
+            WHERE COUNTRY_NAME = (
+            SELECT LEASTSTRIN FROM(
+            SELECT COUNTRY_NAME LEASTSTRIN, ROW_NUMBER() OVER (ORDER BY S) RN FROM(
+            SELECT COUNTRY_NAME, ROUND(AVG(STRINGENCY_INDEX) , 4) S
+            FROM(
+            SELECT COUNTRY_NAME, STRINGENCY_INDEX
+            FROM PROJECT_STATISTICNEW
+            WHERE STRINGENCY_INDEX IS NOT NULL
+            )
+            GROUP BY COUNTRY_NAME
+            ORDER BY S
+            )
+            WHERE ROWNUM < 4)
+            WHERE RN = 2
+            )
+            GROUP BY EXTRACT(MONTH FROM DAY)
+            ORDER BY XL2S
+            )
+            ON XL2S = X
+            FULL OUTER JOIN
+            (
+            SELECT EXTRACT(MONTH FROM DAY) XL3S, ROUND(AVG(STRINGENCY_INDEX), 6) L3S
+            FROM PROJECT_STATISTICNEW
+            WHERE COUNTRY_NAME = (
+            SELECT LEASTSTRIN FROM(
+            SELECT COUNTRY_NAME LEASTSTRIN, ROW_NUMBER() OVER (ORDER BY S) RN FROM(
+            SELECT COUNTRY_NAME, ROUND(AVG(STRINGENCY_INDEX) , 4) S
+            FROM(
+            SELECT COUNTRY_NAME, STRINGENCY_INDEX
+            FROM PROJECT_STATISTICNEW
+            WHERE STRINGENCY_INDEX IS NOT NULL
+            )
+            GROUP BY COUNTRY_NAME
+            ORDER BY S
+            )
+            WHERE ROWNUM < 4)
+            WHERE RN = 3
+            )
+            GROUP BY EXTRACT(MONTH FROM DAY)
+            ORDER BY XL3S
+            )
+            ON XL3S = X
+            FULL OUTER JOIN
+            (
+            SELECT EXTRACT(MONTH FROM DAY) XH1S, ROUND(AVG(STRINGENCY_INDEX), 6) H1S
+            FROM PROJECT_STATISTICNEW
+            WHERE COUNTRY_NAME = (
+            SELECT LEASTSTRIN FROM(
+            SELECT COUNTRY_NAME LEASTSTRIN, ROW_NUMBER() OVER (ORDER BY S) RN FROM(
+            SELECT COUNTRY_NAME, ROUND(AVG(STRINGENCY_INDEX) , 4) S
+            FROM(
+            SELECT COUNTRY_NAME, STRINGENCY_INDEX
+            FROM PROJECT_STATISTICNEW
+            WHERE STRINGENCY_INDEX IS NOT NULL
+            )
+            GROUP BY COUNTRY_NAME
+            ORDER BY S DESC
+            )
+            WHERE ROWNUM < 4)
+            WHERE RN = 1
+            )
+            GROUP BY EXTRACT(MONTH FROM DAY)
+            ORDER BY XH1S
+            )
+            ON XH1S = X
+            FULL OUTER JOIN
+            (
+            SELECT EXTRACT(MONTH FROM DAY) XH2S, ROUND(AVG(STRINGENCY_INDEX), 6) H2S
+            FROM PROJECT_STATISTICNEW
+            WHERE COUNTRY_NAME = (
+            SELECT LEASTSTRIN FROM(
+            SELECT COUNTRY_NAME LEASTSTRIN, ROW_NUMBER() OVER (ORDER BY S) RN FROM(
+            SELECT COUNTRY_NAME, ROUND(AVG(STRINGENCY_INDEX) , 4) S
+            FROM(
+            SELECT COUNTRY_NAME, STRINGENCY_INDEX
+            FROM PROJECT_STATISTICNEW
+            WHERE STRINGENCY_INDEX IS NOT NULL
+            )
+            GROUP BY COUNTRY_NAME
+            ORDER BY S DESC
+            )
+            WHERE ROWNUM < 4)
+            WHERE RN = 2
+            )
+            GROUP BY EXTRACT(MONTH FROM DAY)
+            ORDER BY XH2S
+            )
+            ON XH2S = X
+            FULL OUTER JOIN
+            (
+            SELECT EXTRACT(MONTH FROM DAY) XH3S, ROUND(AVG(STRINGENCY_INDEX), 6) H3S
+            FROM PROJECT_STATISTICNEW
+            WHERE COUNTRY_NAME = (
+            SELECT LEASTSTRIN FROM(
+            SELECT COUNTRY_NAME LEASTSTRIN, ROW_NUMBER() OVER (ORDER BY S) RN FROM(
+            SELECT COUNTRY_NAME, ROUND(AVG(STRINGENCY_INDEX) , 4) S
+            FROM(
+            SELECT COUNTRY_NAME, STRINGENCY_INDEX
+            FROM PROJECT_STATISTICNEW
+            WHERE STRINGENCY_INDEX IS NOT NULL
+            )
+            GROUP BY COUNTRY_NAME
+            ORDER BY S DESC
+            )
+            WHERE ROWNUM < 4)
+            WHERE RN = 3
+            )
+            GROUP BY EXTRACT(MONTH FROM DAY)
+            ORDER BY XH3S
+            )
+            ON XH3S = X
+            FULL OUTER JOIN
+            (
+            SELECT EXTRACT(MONTH FROM DAY) XCS, ROUND(AVG(STRINGENCY_INDEX), 6) CS
+            FROM PROJECT_STATISTICNEW
+            WHERE COUNTRY_NAME = '`+ arguments[0] +`'
+            GROUP BY EXTRACT(MONTH FROM DAY)
+            ORDER BY XCS
+            )
+            ON XCS = X
+            ORDER BY X`
         );
+        console.log(result.rows)
         return result.rows;
       } catch(err) {
         console.error(err);
