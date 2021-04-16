@@ -39,6 +39,15 @@ const info = {
   ]
 }
 
+const info2 = {
+  labels: [],
+  datasets: [
+    {
+      
+    }
+  ]
+}
+
 class App extends Component {
   constructor(props) {
     super(props);
@@ -48,7 +57,10 @@ class App extends Component {
       labels: [], // x-axis stuff
       datasets: [], // Info about graph (data: is the actual data)
       updated: false, // Whether the graph has been displayed
-      info: {"labels":[], "datasets":[]} // The actual graph stuff
+      opts: {}, // Options
+      labels2: [],
+      dataset2: [],
+      opts2: []
     };
     // this.buttonClick = this.buttonClick.bind(this);
     this.addItem1 = this.addItem1.bind(this);
@@ -220,31 +232,137 @@ class App extends Component {
       if(!this.state.updated) {
         console.log(data);
         var l = data.length;
-        var temp = [];
+        var temp1 = [];
+        var temp2 = [];
+        var temp3 = [];
+        var temp4 = [];
+        var str = this.state.list[0];
 
         for(var i = 0; i < l; i++) {
-          temp.push(data[i]["Y"]);
+          temp1.push(data[i]["Y1"]);
+          temp2.push(data[i]["Y2"]);
+          temp3.push(data[i]["Y3"]);
+          temp4.push(data[i]["Y4"]);
         }
         
-        console.log(temp);
+        console.log(temp1);
+        console.log(temp2);
+        console.log(temp3);
+        console.log(temp4);
 
         this.setState({
           labels: ["February", "March", "April", "May", "June","July", "August",
                   "September", "October", "November"],
           datasets: [{
             fill: false,
+            label:"Flights",
+            yAxisID: 'A',
             lineTension: 0.5,
-            backgroundColor: 'rgba(75,192,192,1)',
-            borderColor: 'rgba(0,0,0,1)',
+            borderColor: 'rgba(65,105,225)',
             borderWidth: 2,
-            data: temp
+            data: temp1
+          },
+          {
+            fill: false,
+            label:"Covid Cases",
+            yAxisID: 'B',
+            lineTension: 0.5,
+            borderColor: 'rgba(220,20,60)',
+            borderWidth: 2,
+            data: temp2
           }],
+
+          opts: {
+            title:{
+              display:true,
+              text:'Flights and Covid Cases per Month for '.concat(str),
+              fontSize:20
+            },
+            scales: {
+              yAxes: [{
+                id: 'A',
+                type: 'linear',
+                position: 'left',
+              }, {
+                id: 'B',
+                type: 'linear',
+                position: 'right',
+              }]
+            },
+            animation: {
+              duration: 0
+            },
+            hover: {
+              animationDuration: 0
+            },
+            responsiveAnimationDuration: 0,
+            legend: {
+              display:true
+            }
+          },
+
+          labels2: ["February", "March", "April", "May", "June","July", "August",
+                  "September", "October", "November"],
+
+          datasets2: [{
+            fill: false,
+            label:"Normalized Flights",
+            yAxisID: 'A',
+            lineTension: 0.5,
+            borderColor: 'rgba(65,105,225)',
+            borderWidth: 2,
+            data: temp3
+          },
+          {
+            fill: false,
+            label:"Normalized covid cases",
+            yAxisID: 'B',
+            lineTension: 0.5,
+            borderColor: 'rgba(220,20,60)',
+            borderWidth: 2,
+            data: temp4
+          }],
+
+          opts2: {
+            title:{
+              display:true,
+              text:'Flights and Covid Cases per Month for '.concat(str).concat(' Normalized for Population'),
+              fontSize:20
+            },
+            scales: {
+              yAxes: [{
+                id: 'A',
+                type: 'linear',
+                position: 'left',
+              }, {
+                id: 'B',
+                type: 'linear',
+                position: 'right',
+              }]
+            },
+            animation: {
+              duration: 0
+            },
+            hover: {
+              animationDuration: 0
+            },
+            responsiveAnimationDuration: 0,
+            legend: {
+              display:true
+            }
+          }
         });
 
         info["labels"] = this.state.labels;
-        info["datasets"][0] = this.state.datasets;
+        info["datasets"] = this.state.datasets;
+        info2["labels"] = this.state.labels2;
+        info2["datasets"] = this.state.datasets2;
 
         setInterval(() => {}, 10000);
+
+        this.setState({
+          updated: true
+        });
       }
     });
 
@@ -270,6 +388,24 @@ class App extends Component {
             borderWidth: 2,
             data: temp
           }],
+
+          opts: {
+            title:{
+              display:true,
+              text:'Figure out how to do this',
+              fontSize:20
+            },
+            animation: {
+              duration: 0
+            },
+            hover: {
+              animationDuration: 0
+            },
+            responsiveAnimationDuration: 0,
+            legend: {
+              display:false
+            }
+          }
         });
 
         info["labels"] = this.state.labels;
@@ -290,6 +426,9 @@ class App extends Component {
         var temp1 = [];
         var temp2 = [];
         var temp3 = [];
+        var str1 = this.state.list[0];
+        var str2 = this.state.list[1];
+        var str3 = this.state.list[2];
 
         for(var i = 0; i < l; i++) {
           temp1.push(data[i]["Y1"]);
@@ -306,28 +445,46 @@ class App extends Component {
                   "September", "October", "November"],
           datasets: [{
             fill: false,
+            label: str1,
             lineTension: 0.5,
-            backgroundColor: 'rgba(75,192,192,1)',
-            borderColor: 'rgba(0,0,0,1)',
+            borderColor: 'rgba(65,105,225)',
             borderWidth: 2,
             data: temp1
           },
           {
             fill: false,
+            label: str2,
             lineTension: 0.5,
-            backgroundColor: 'rgba(75,192,192,1)',
-            borderColor: 'rgba(0,0,0,1)',
+            borderColor: 'rgba(220,20,60)',
             borderWidth: 2,
             data: temp2
           },
           {
             fill: false,
+            label: str3,
             lineTension: 0.5,
-            backgroundColor: 'rgba(75,192,192,1)',
             borderColor: 'rgba(0,0,0,1)',
             borderWidth: 2,
             data: temp3
           }],
+
+          opts: {
+            title:{
+              display:true,
+              text:'Monthly Flights for '.concat(str1).concat(', ').concat(str2).concat(', and ').concat(str3),
+              fontSize:20
+            },
+            animation: {
+              duration: 0
+            },
+            hover: {
+              animationDuration: 0
+            },
+            responsiveAnimationDuration: 0,
+            legend: {
+              display:true
+            }
+          }
         });
 
         info["labels"] = this.state.labels;
@@ -352,23 +509,20 @@ class App extends Component {
       <div className="loaded">
           <Line
             data={info}
-            options={{
-              title:{
-                display:true,
-                text:'Figure out how to do this',
-                fontSize:20
-              },
-              animation: {
-                duration: 0
-              },
-              hover: {
-                animationDuration: 0
-              },
-              responsiveAnimationDuration: 0,
-              legend: {
-                display:false
-              }
-            }}
+            options={this.state.opts}
+          />
+      </div>
+    );
+
+    let loadedState2 = (
+      <div className="loaded">
+          <Line
+            data={info}
+            options={this.state.opts}
+          />
+          <Line
+            data={info2}
+            options={this.state.opts2}
           />
       </div>
     );
@@ -505,7 +659,7 @@ class App extends Component {
                       </div>
                     </div>
                     {!this.state.updated && emptyState}
-                    {this.state.updated && loadedState}
+                    {this.state.updated && loadedState2}
                 </div>
               </div>
             </Route>
