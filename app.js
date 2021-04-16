@@ -185,170 +185,238 @@ io.on("connection", (socket) => {
         });
 
         const result = await connection.execute(
-          `SELECT X, NVL(Y1,0) FLIGHTS, NVL(Y2,0) CASES, NVL(Y3,0) BRAZIL, NVL(Y4,0) CHINA, NVL(Y5,0) INDIA, NVL(Y6,0) UNITEDSTATES
-          FROM
-          (
-          SELECT EXTRACT(MONTH FROM END_TIME) AS X, COUNT(*) AS Y1
-          FROM PROJECT_FLIGHT
-          WHERE DEPARTURE  IN
-          (SELECT ICAOAP FROM PROJECT_AIRPORT WHERE COUNTRY IN
-          (
-          SELECT DISTINCT COUNTRY_NAME AS HOTSPOTS FROM(
-          SELECT COUNTRY_NAME, MONTH, SUMS, ROW_NUMBER() OVER(PARTITION BY MONTH ORDER BY SUMS DESC) AS RN
-          FROM(
-          SELECT COUNTRY_NAME, EXTRACT(MONTH FROM DAY) AS MONTH, SUM(NEW_CASES) AS SUMS
-          FROM PROJECT_STATISTIC2020
-          WHERE COUNTRY_NAME NOT IN ('World', 'International', 'Europe', 'North America', 'Asia', 'Africa', 'North America, 'European Union', 'South America') AND NEW_CASES IS NOT NULL
-          GROUP BY COUNTRY_NAME, EXTRACT(MONTH FROM DAY)
-          ORDER BY MONTH DESC, SUM(NEW_CASES) DESC
-          )
-          )
-          WHERE RN <=1
-          )
-          )
-          AND DESTINATION IN
-          (SELECT ICAOAP FROM PROJECT_AIRPORT WHERE COUNTRY = '`+ arguments[0] +`'
-          )
-          GROUP  BY  EXTRACT(MONTH FROM END_TIME)
-          ORDER BY EXTRACT(MONTH FROM END_TIME)
-          )
-          NATURAL JOIN
-          (
-          SELECT EXTRACT(MONTH FROM DAY) AS X, SUM(NEW_CASES) AS Y2
-          FROM PROJECT_STATISTIC2020
-          WHERE COUNTRY_NAME = '`+ arguments[0] +`'
-          
-          GROUP  BY  EXTRACT(MONTH FROM DAY)
-          ORDER BY EXTRACT(MONTH FROM DAY)
-          )
-          FULL OUTER JOIN
-          (
-          SELECT EXTRACT(MONTH FROM END_TIME) AS X1, COUNT(*) AS Y3
-          FROM PROJECT_FLIGHT
-          WHERE DEPARTURE  IN
-          (SELECT ICAOAP FROM PROJECT_AIRPORT WHERE COUNTRY IN
-          (
-          SELECT HOTSPOTS FROM(
-          SELECT HOTSPOTS, ROW_NUMBER() OVER (ORDER BY HOTSPOTS) ROWTOBECHANGED FROM(
-          SELECT DISTINCT COUNTRY_NAME AS HOTSPOTS FROM(
-          SELECT COUNTRY_NAME, MONTH, SUMS, ROW_NUMBER() OVER(PARTITION BY MONTH ORDER BY SUMS DESC) AS RN
-          FROM(
-          SELECT COUNTRY_NAME, EXTRACT(MONTH FROM DAY) AS MONTH, SUM(NEW_CASES) AS SUMS
-          FROM PROJECT_STATISTIC2020
-          WHERE COUNTRY_NAME NOT IN ('World', 'International', 'Europe', 'North America', 'Asia', 'Africa', 'North America, 'European Union', 'South America') AND NEW_CASES IS NOT NULL
-          GROUP BY COUNTRY_NAME, EXTRACT(MONTH FROM DAY)
-          ORDER BY MONTH DESC, SUM(NEW_CASES) DESC
-          )
-          )
-          WHERE RN <=1
-          )
-          )
-          WHERE ROWTOBECHANGED = 1
-          )
-          )
-          AND DESTINATION IN
-          (SELECT ICAOAP FROM PROJECT_AIRPORT WHERE COUNTRY = '`+ arguments[0] +`'
-          )
-          GROUP  BY  EXTRACT(MONTH FROM END_TIME)
-          ORDER BY EXTRACT(MONTH FROM END_TIME)
-          )
-          ON X = X1
-          FULL OUTER JOIN
-          (
-          SELECT EXTRACT(MONTH FROM END_TIME) AS X2, COUNT(*) AS Y4
-          FROM PROJECT_FLIGHT
-          WHERE DEPARTURE  IN
-          (SELECT ICAOAP FROM PROJECT_AIRPORT WHERE COUNTRY IN
-          (
-          SELECT HOTSPOTS FROM(
-          SELECT HOTSPOTS, ROW_NUMBER() OVER (ORDER BY HOTSPOTS) ROWTOBECHANGED FROM(
-          SELECT DISTINCT COUNTRY_NAME AS HOTSPOTS FROM(
-          SELECT COUNTRY_NAME, MONTH, SUMS, ROW_NUMBER() OVER(PARTITION BY MONTH ORDER BY SUMS DESC) AS RN
-          FROM(
-          SELECT COUNTRY_NAME, EXTRACT(MONTH FROM DAY) AS MONTH, SUM(NEW_CASES) AS SUMS
-          FROM PROJECT_STATISTIC2020
-          WHERE COUNTRY_NAME NOT IN ('World', 'International', 'Europe', 'North America', 'Asia', 'Africa', 'North America, 'European Union', 'South America') AND NEW_CASES IS NOT NULL
-          GROUP BY COUNTRY_NAME, EXTRACT(MONTH FROM DAY)
-          ORDER BY MONTH DESC, SUM(NEW_CASES) DESC
-          )
-          )
-          WHERE RN <=1
-          )
-          )
-          WHERE ROWTOBECHANGED = 2
-          )
-          )
-          AND DESTINATION IN
-          (SELECT ICAOAP FROM PROJECT_AIRPORT WHERE COUNTRY = '`+ arguments[0] +`'
-          )
-          GROUP  BY  EXTRACT(MONTH FROM END_TIME)
-          ORDER BY EXTRACT(MONTH FROM END_TIME)
-          )
-          ON X2 = X
-          FULL OUTER JOIN
-          (
-          SELECT EXTRACT(MONTH FROM END_TIME) AS X3, COUNT(*) AS Y5
-          FROM PROJECT_FLIGHT
-          WHERE DEPARTURE  IN
-          (SELECT ICAOAP FROM PROJECT_AIRPORT WHERE COUNTRY IN
-          (
-          SELECT HOTSPOTS FROM(
-          SELECT HOTSPOTS, ROW_NUMBER() OVER (ORDER BY HOTSPOTS) ROWTOBECHANGED FROM(
-          SELECT DISTINCT COUNTRY_NAME AS HOTSPOTS FROM(
-          SELECT COUNTRY_NAME, MONTH, SUMS, ROW_NUMBER() OVER(PARTITION BY MONTH ORDER BY SUMS DESC) AS RN
-          FROM(
-          SELECT COUNTRY_NAME, EXTRACT(MONTH FROM DAY) AS MONTH, SUM(NEW_CASES) AS SUMS
-          FROM PROJECT_STATISTIC2020
-          WHERE COUNTRY_NAME NOT IN ('World', 'International', 'Europe', 'North America', 'Asia', 'Africa', 'North America, 'European Union', 'South America') AND NEW_CASES IS NOT NULL
-          GROUP BY COUNTRY_NAME, EXTRACT(MONTH FROM DAY)
-          ORDER BY MONTH DESC, SUM(NEW_CASES) DESC
-          )
-          )
-          WHERE RN <=1
-          )
-          )
-          WHERE ROWTOBECHANGED = 3
-          )
-          )
-          AND DESTINATION IN
-          (SELECT ICAOAP FROM PROJECT_AIRPORT WHERE COUNTRY = '`+ arguments[0] +`'
-          )
-          GROUP  BY  EXTRACT(MONTH FROM END_TIME)
-          ORDER BY EXTRACT(MONTH FROM END_TIME)
-          )
-          ON X3 = X
-          FULL OUTER JOIN
-          (
-          SELECT EXTRACT(MONTH FROM END_TIME) AS X4, COUNT(*) AS Y6
-          FROM PROJECT_FLIGHT
-          WHERE DEPARTURE  IN
-          (SELECT ICAOAP FROM PROJECT_AIRPORT WHERE COUNTRY IN
-          (
-          SELECT HOTSPOTS FROM(
-          SELECT HOTSPOTS, ROW_NUMBER() OVER (ORDER BY HOTSPOTS) ROWTOBECHANGED FROM(
-          SELECT DISTINCT COUNTRY_NAME AS HOTSPOTS FROM(
-          SELECT COUNTRY_NAME, MONTH, SUMS, ROW_NUMBER() OVER(PARTITION BY MONTH ORDER BY SUMS DESC) AS RN
-          FROM(
-          SELECT COUNTRY_NAME, EXTRACT(MONTH FROM DAY) AS MONTH, SUM(NEW_CASES) AS SUMS
-          FROM PROJECT_STATISTIC2020
-          WHERE COUNTRY_NAME NOT IN ('World', 'International', 'Europe', 'North America', 'Asia', 'Africa', 'North America, 'European Union', 'South America') AND NEW_CASES IS NOT NULL
-          GROUP BY COUNTRY_NAME, EXTRACT(MONTH FROM DAY)
-          ORDER BY MONTH DESC, SUM(NEW_CASES) DESC
-          )
-          )
-          WHERE RN <=1
-          )
-          )
-          WHERE ROWTOBECHANGED = 4
-          )
-          )
-          AND DESTINATION IN
-          (SELECT ICAOAP FROM PROJECT_AIRPORT WHERE COUNTRY = '`+ arguments[0] +`'
-          )
-          GROUP  BY  EXTRACT(MONTH FROM END_TIME)
-          ORDER BY EXTRACT(MONTH FROM END_TIME)
-          )
-          ON X4 = X`
+          `SELECT X,
+          NVL(Y1, 0) FLIGHTS,
+          NVL(Y2, 0) CASES,
+          NVL(Y3, 0) BRAZIL,
+          NVL(Y4, 0) CHINA,
+          NVL(Y5, 0) INDIA,
+          NVL(Y6, 0) UNITEDSTATES
+          FROM (
+            SELECT EXTRACT(MONTH FROM END_TIME) AS X, COUNT(*) AS Y1
+            FROM PROJECT_FLIGHT
+            WHERE DEPARTURE IN
+                  (SELECT ICAOAP
+                   FROM PROJECT_AIRPORT
+                   WHERE COUNTRY IN
+                         (
+                             SELECT DISTINCT COUNTRY_NAME AS HOTSPOTS
+                             FROM (
+                                      SELECT COUNTRY_NAME,
+                                             MONTH,
+                                             SUMS,
+                                             ROW_NUMBER() OVER (PARTITION BY MONTH ORDER BY SUMS DESC) AS RN
+                                      FROM (
+                                               SELECT COUNTRY_NAME,
+                                                      EXTRACT(MONTH FROM DAY) AS MONTH,
+                                                      SUM(NEW_CASES)          AS SUMS
+                                               FROM PROJECT_STATISTIC2020
+                                               WHERE COUNTRY_NAME NOT IN ('World', 'International', 'Europe', 'North America', 'Asia', 'Africa', 'North America', 'European Union', 'South America')
+                                                 AND NEW_CASES IS NOT NULL
+                                               GROUP BY COUNTRY_NAME, EXTRACT(MONTH FROM DAY)
+                                               ORDER BY MONTH DESC, SUM(NEW_CASES) DESC
+                                           )
+                                  )
+                             WHERE RN <= 1
+                         )
+                  )
+              AND DESTINATION IN
+                  (SELECT ICAOAP
+                   FROM PROJECT_AIRPORT
+                   WHERE COUNTRY = '`+ arguments[0] +`'
+                  )
+            GROUP BY EXTRACT(MONTH FROM END_TIME)
+            ORDER BY EXTRACT(MONTH FROM END_TIME)
+        )
+            NATURAL JOIN
+        (
+            SELECT EXTRACT(MONTH FROM DAY) AS X, SUM(NEW_CASES) AS Y2
+            FROM PROJECT_STATISTIC2020
+            WHERE COUNTRY_NAME = '`+ arguments[0] +`'
+     
+            GROUP BY EXTRACT(MONTH FROM DAY)
+            ORDER BY EXTRACT(MONTH FROM DAY)
+        )
+            FULL OUTER JOIN
+        (
+            SELECT EXTRACT(MONTH FROM END_TIME) AS X1, COUNT(*) AS Y3
+            FROM PROJECT_FLIGHT
+            WHERE DEPARTURE IN
+                  (SELECT ICAOAP
+                   FROM PROJECT_AIRPORT
+                   WHERE COUNTRY IN
+                         (
+                             SELECT HOTSPOTS
+                             FROM (
+                                      SELECT HOTSPOTS, ROW_NUMBER() OVER (ORDER BY HOTSPOTS) ROWTOBECHANGED
+                                      FROM (
+                                               SELECT DISTINCT COUNTRY_NAME AS HOTSPOTS
+                                               FROM (
+                                                        SELECT COUNTRY_NAME,
+                                                               MONTH,
+                                                               SUMS,
+                                                               ROW_NUMBER() OVER (PARTITION BY MONTH ORDER BY SUMS DESC) AS RN
+                                                        FROM (
+                                                                 SELECT COUNTRY_NAME,
+                                                                        EXTRACT(MONTH FROM DAY) AS MONTH,
+                                                                        SUM(NEW_CASES)          AS SUMS
+                                                                 FROM PROJECT_STATISTIC2020
+                                                                 WHERE COUNTRY_NAME NOT IN ('World', 'International', 'Europe', 'North America', 'Asia', 'Africa', 'North America', 'European Union', 'South America')
+                                                                   AND NEW_CASES IS NOT NULL
+                                                                 GROUP BY COUNTRY_NAME, EXTRACT(MONTH FROM DAY)
+                                                                 ORDER BY MONTH DESC, SUM(NEW_CASES) DESC
+                                                             )
+                                                    )
+                                               WHERE RN <= 1
+                                           )
+                                  )
+                             WHERE ROWTOBECHANGED = 1
+                         )
+                  )
+              AND DESTINATION IN
+                  (SELECT ICAOAP
+                   FROM PROJECT_AIRPORT
+                   WHERE COUNTRY = '`+ arguments[0] +`'
+                  )
+            GROUP BY EXTRACT(MONTH FROM END_TIME)
+            ORDER BY EXTRACT(MONTH FROM END_TIME)
+        )
+        ON X = X1
+            FULL OUTER JOIN
+        (
+            SELECT EXTRACT(MONTH FROM END_TIME) AS X2, COUNT(*) AS Y4
+            FROM PROJECT_FLIGHT
+            WHERE DEPARTURE IN
+                  (SELECT ICAOAP
+                   FROM PROJECT_AIRPORT
+                   WHERE COUNTRY IN
+                         (
+                             SELECT HOTSPOTS
+                             FROM (
+                                      SELECT HOTSPOTS, ROW_NUMBER() OVER (ORDER BY HOTSPOTS) ROWTOBECHANGED
+                                      FROM (
+                                               SELECT DISTINCT COUNTRY_NAME AS HOTSPOTS
+                                               FROM (
+                                                        SELECT COUNTRY_NAME,
+                                                               MONTH,
+                                                               SUMS,
+                                                               ROW_NUMBER() OVER (PARTITION BY MONTH ORDER BY SUMS DESC) AS RN
+                                                        FROM (
+                                                                 SELECT COUNTRY_NAME,
+                                                                        EXTRACT(MONTH FROM DAY) AS MONTH,
+                                                                        SUM(NEW_CASES)          AS SUMS
+                                                                 FROM PROJECT_STATISTIC2020
+                                                                 WHERE COUNTRY_NAME NOT IN ('World', 'International', 'Europe', 'North America', 'Asia', 'Africa', 'North America', 'European Union', 'South America')
+                                                                   AND NEW_CASES IS NOT NULL
+                                                                 GROUP BY COUNTRY_NAME, EXTRACT(MONTH FROM DAY)
+                                                                 ORDER BY MONTH DESC, SUM(NEW_CASES) DESC
+                                                             )
+                                                    )
+                                               WHERE RN <= 1
+                                           )
+                                  )
+                             WHERE ROWTOBECHANGED = 2
+                         )
+                  )
+              AND DESTINATION IN
+                  (SELECT ICAOAP
+                   FROM PROJECT_AIRPORT
+                   WHERE COUNTRY = '`+ arguments[0] +`'
+                  )
+            GROUP BY EXTRACT(MONTH FROM END_TIME)
+            ORDER BY EXTRACT(MONTH FROM END_TIME)
+        )
+        ON X2 = X
+            FULL OUTER JOIN
+        (
+            SELECT EXTRACT(MONTH FROM END_TIME) AS X3, COUNT(*) AS Y5
+            FROM PROJECT_FLIGHT
+            WHERE DEPARTURE IN
+                  (SELECT ICAOAP
+                   FROM PROJECT_AIRPORT
+                   WHERE COUNTRY IN
+                         (
+                             SELECT HOTSPOTS
+                             FROM (
+                                      SELECT HOTSPOTS, ROW_NUMBER() OVER (ORDER BY HOTSPOTS) ROWTOBECHANGED
+                                      FROM (
+                                               SELECT DISTINCT COUNTRY_NAME AS HOTSPOTS
+                                               FROM (
+                                                        SELECT COUNTRY_NAME,
+                                                               MONTH,
+                                                               SUMS,
+                                                               ROW_NUMBER() OVER (PARTITION BY MONTH ORDER BY SUMS DESC) AS RN
+                                                        FROM (
+                                                                 SELECT COUNTRY_NAME,
+                                                                        EXTRACT(MONTH FROM DAY) AS MONTH,
+                                                                        SUM(NEW_CASES)          AS SUMS
+                                                                 FROM PROJECT_STATISTIC2020
+                                                                 WHERE COUNTRY_NAME NOT IN ('World', 'International', 'Europe', 'North America', 'Asia', 'Africa', 'North America', 'European Union', 'South America')
+                                                                   AND NEW_CASES IS NOT NULL
+                                                                 GROUP BY COUNTRY_NAME, EXTRACT(MONTH FROM DAY)
+                                                                 ORDER BY MONTH DESC, SUM(NEW_CASES) DESC
+                                                             )
+                                                    )
+                                               WHERE RN <= 1
+                                           )
+                                  )
+                             WHERE ROWTOBECHANGED = 3
+                         )
+                  )
+              AND DESTINATION IN
+                  (SELECT ICAOAP
+                   FROM PROJECT_AIRPORT
+                   WHERE COUNTRY = '`+ arguments[0] +`'
+                  )
+            GROUP BY EXTRACT(MONTH FROM END_TIME)
+            ORDER BY EXTRACT(MONTH FROM END_TIME)
+        )
+        ON X3 = X
+            FULL OUTER JOIN
+        (
+            SELECT EXTRACT(MONTH FROM END_TIME) AS X4, COUNT(*) AS Y6
+            FROM PROJECT_FLIGHT
+            WHERE DEPARTURE IN
+                  (SELECT ICAOAP
+                   FROM PROJECT_AIRPORT
+                   WHERE COUNTRY IN
+                         (
+                             SELECT HOTSPOTS
+                             FROM (
+                                      SELECT HOTSPOTS, ROW_NUMBER() OVER (ORDER BY HOTSPOTS) ROWTOBECHANGED
+                                      FROM (
+                                               SELECT DISTINCT COUNTRY_NAME AS HOTSPOTS
+                                               FROM (
+                                                        SELECT COUNTRY_NAME,
+                                                               MONTH,
+                                                               SUMS,
+                                                               ROW_NUMBER() OVER (PARTITION BY MONTH ORDER BY SUMS DESC) AS RN
+                                                        FROM (
+                                                                 SELECT COUNTRY_NAME,
+                                                                        EXTRACT(MONTH FROM DAY) AS MONTH,
+                                                                        SUM(NEW_CASES)          AS SUMS
+                                                                 FROM PROJECT_STATISTIC2020
+                                                                 WHERE COUNTRY_NAME NOT IN ('World', 'International', 'Europe', 'North America', 'Asia', 'Africa', 'North America', 'European Union', 'South America')
+                                                                   AND NEW_CASES IS NOT NULL
+                                                                 GROUP BY COUNTRY_NAME, EXTRACT(MONTH FROM DAY)
+                                                                 ORDER BY MONTH DESC, SUM(NEW_CASES) DESC
+                                                             )
+                                                    )
+                                               WHERE RN <= 1
+                                           )
+                                  )
+                             WHERE ROWTOBECHANGED = 4
+                         )
+                  )
+              AND DESTINATION IN
+                  (SELECT ICAOAP
+                   FROM PROJECT_AIRPORT
+                   WHERE COUNTRY = '`+ arguments[0] +`'
+                  )
+            GROUP BY EXTRACT(MONTH FROM END_TIME)
+            ORDER BY EXTRACT(MONTH FROM END_TIME)
+        )
+        ON X4 = X`
         );
         console.log(result.rows);
         return result.rows;
